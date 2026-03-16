@@ -1,0 +1,56 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test-api:
+    name: Build & Test .NET 8 API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+      - run: dotnet restore api/EmployeeDirectory.csproj
+      - run: dotnet build api/EmployeeDirectory.csproj --no-restore --configuration Release
+      - run: dotnet publish api/EmployeeDirectory.csproj -c Release -o ./publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-publish
+          path: ./publish
+
+  build-frontend:
+    name: Build Angular Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+        working-directory: client
+      - run: npm run build -- --configuration production
+        working-directory: client
+
+  deploy-api:
+    name: Deploy API to Azure
+    needs: [build-and-test-api, build-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-publish
+          path: ./publish
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ./publish

@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: employeedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./api
+    ports:
+      - "5001:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=employeedb;Username=postgres;Password=postgres123
+      - JwtSettings__Secret=employee-directory-jwt-secret-key-32chars!!
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
