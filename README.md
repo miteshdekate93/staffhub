@@ -1,6 +1,6 @@
 # Employee Directory — Angular 17 + .NET 8 + Azure
 
-![Build](https://github.com/miteshdekate93/angular-dotnet-azure/actions/workflows/deploy-azure.yml/badge.svg)
+![Build](https://github.com/miteshdekate93/staffhub/actions/workflows/deploy-azure.yml/badge.svg)
 ![Angular](https://img.shields.io/badge/Angular-17-DD0031?logo=angular)
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple?logo=dotnet)
 ![Azure](https://img.shields.io/badge/Azure-App%20Service-0089D6?logo=microsoftazure)
@@ -72,8 +72,8 @@ An enterprise-grade **Employee Directory** and **HR Dashboard** built with Angul
 ## Quick Start (Local)
 
 ```bash
-git clone https://github.com/miteshdekate93/angular-dotnet-azure.git
-cd angular-dotnet-azure
+git clone https://github.com/miteshdekate93/staffhub.git
+cd staffhub
 docker-compose up --build
 ```
 
@@ -128,7 +128,7 @@ The GitHub Actions pipeline automatically deploys on every push to `main`.
 ## Project Structure
 
 ```
-angular-dotnet-azure/
+staffhub/
 ├── api/                        # .NET 8 Web API
 │   ├── Controllers/
 │   │   ├── EmployeesController.cs
