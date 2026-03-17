@@ -7,8 +7,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
+import { EmployeeFormDialogComponent } from '../employee-form-dialog/employee-form-dialog.component';
 
 @Component({
   selector: 'app-employee-list',
@@ -16,10 +18,15 @@ import { Employee } from '../../models/employee.model';
   imports: [
     CommonModule, FormsModule,
     MatTableModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatProgressSpinnerModule, MatChipsModule
+    MatIconModule, MatProgressSpinnerModule, MatChipsModule, MatDialogModule
   ],
   template: `
-    <h2>Employees</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">Employees</h2>
+      <button mat-raised-button color="primary" (click)="openAddDialog()">
+        <mat-icon>add</mat-icon> Add Employee
+      </button>
+    </div>
 
     <mat-form-field appearance="outline" style="width:100%;max-width:400px">
       <mat-label>Search employees</mat-label>
@@ -55,7 +62,7 @@ import { Employee } from '../../models/employee.model';
     </table>
 
     <p *ngIf="!loading && employees.length === 0" style="color:#666">
-      No employees found. Make sure the API is running.
+      No employees found. Click "Add Employee" to get started.
     </p>
   `
 })
@@ -65,7 +72,7 @@ export class EmployeeListComponent implements OnInit {
   search = '';
   columns = ['name', 'email', 'jobTitle', 'department'];
 
-  constructor(private employeeService: EmployeeService) {}
+  constructor(private employeeService: EmployeeService, private dialog: MatDialog) {}
 
   ngOnInit() { this.load(); }
 
@@ -78,4 +85,14 @@ export class EmployeeListComponent implements OnInit {
   }
 
   onSearch() { this.load(); }
+
+  openAddDialog() {
+    const ref = this.dialog.open(EmployeeFormDialogComponent, {
+      data: null,
+      width: '440px'
+    });
+    ref.afterClosed().subscribe(result => {
+      if (result) this.load();
+    });
+  }
 }
