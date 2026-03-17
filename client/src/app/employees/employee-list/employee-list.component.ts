@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
 import { EmployeeFormDialogComponent } from '../employee-form-dialog/employee-form-dialog.component';
@@ -18,7 +19,8 @@ import { EmployeeFormDialogComponent } from '../employee-form-dialog/employee-fo
   imports: [
     CommonModule, FormsModule,
     MatTableModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatProgressSpinnerModule, MatChipsModule, MatDialogModule
+    MatIconModule, MatProgressSpinnerModule, MatChipsModule,
+    MatDialogModule, MatTooltipModule
   ],
   template: `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -28,7 +30,7 @@ import { EmployeeFormDialogComponent } from '../employee-form-dialog/employee-fo
       </button>
     </div>
 
-    <mat-form-field appearance="outline" style="width:100%;max-width:400px">
+    <mat-form-field appearance="outline" style="width:100%;max-width:400px;margin-bottom:8px">
       <mat-label>Search employees</mat-label>
       <input matInput [(ngModel)]="search" (input)="onSearch()" placeholder="Name or email...">
       <mat-icon matSuffix>search</mat-icon>
@@ -57,6 +59,17 @@ import { EmployeeFormDialogComponent } from '../employee-form-dialog/employee-fo
           <mat-chip>{{ e.department?.name }}</mat-chip>
         </td>
       </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let e" style="text-align:right;white-space:nowrap">
+          <button mat-icon-button color="primary" matTooltip="Edit" (click)="openEditDialog(e)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" matTooltip="Delete" (click)="delete(e)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
       <tr mat-row *matRowDef="let row; columns: columns"></tr>
     </table>
@@ -70,7 +83,7 @@ export class EmployeeListComponent implements OnInit {
   employees: Employee[] = [];
   loading = false;
   search = '';
-  columns = ['name', 'email', 'jobTitle', 'department'];
+  columns = ['name', 'email', 'jobTitle', 'department', 'actions'];
 
   constructor(private employeeService: EmployeeService, private dialog: MatDialog) {}
 
@@ -87,12 +100,17 @@ export class EmployeeListComponent implements OnInit {
   onSearch() { this.load(); }
 
   openAddDialog() {
-    const ref = this.dialog.open(EmployeeFormDialogComponent, {
-      data: null,
-      width: '440px'
-    });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.load();
-    });
+    this.dialog.open(EmployeeFormDialogComponent, { data: null, width: '440px' })
+      .afterClosed().subscribe(result => { if (result) this.load(); });
+  }
+
+  openEditDialog(employee: Employee) {
+    this.dialog.open(EmployeeFormDialogComponent, { data: employee, width: '440px' })
+      .afterClosed().subscribe(result => { if (result) this.load(); });
+  }
+
+  delete(employee: Employee) {
+    if (!confirm(`Remove ${employee.firstName} ${employee.lastName}?`)) return;
+    this.employeeService.deleteEmployee(employee.id).subscribe(() => this.load());
   }
 }
