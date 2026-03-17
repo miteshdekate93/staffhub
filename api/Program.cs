@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -81,6 +83,22 @@ using (var scope = app.Services.CreateScope())
 // Health check
 app.MapHealthChecks("/health");
 
+// Auth endpoint — hardcoded admin user for demo
+app.MapPost("/api/auth/login", (LoginRequest req) =>
+{
+    if (req.Username != "admin" || req.Password != "admin123")
+        return Results.Unauthorized();
+
+    var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecret));
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+    var token = new JwtSecurityToken(
+        claims: [new Claim(ClaimTypes.Name, req.Username)],
+        expires: DateTime.UtcNow.AddHours(8),
+        signingCredentials: creds);
+
+    return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+});
+
 // Employees endpoints
 app.MapGet("/api/employees", async (AppDbContext db, string? search, int page = 1, int pageSize = 10) =>
 {
@@ -132,3 +150,5 @@ app.MapGet("/api/departments", async (AppDbContext db) =>
     await db.Departments.ToListAsync());
 
 app.Run();
+
+record LoginRequest(string Username, string Password);
