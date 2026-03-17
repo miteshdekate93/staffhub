@@ -56,7 +56,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddApplicationInsightsTelemetry();
 
 // Health checks
-builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
